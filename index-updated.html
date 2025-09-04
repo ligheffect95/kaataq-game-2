@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaataq - Traditional Alutiiq Game</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="welcome" class="screen active">
+            <h1>Kaataq</h1>
+            <p class="subtitle">Traditional Alutiiq Guessing Game</p>
+            
+            <div class="cultural-info">
+                <button id="info-btn" class="info-toggle">Learn About Kaataq</button>
+                <div id="info-panel" class="info-panel hidden">
+                    <p>Kaataq is an Alutiiq guessing game involving psychological gameplay and social interaction. Players take turns hiding a marked stick (wee) in one of their hands, while others try to guess which hand contains it. This digital version preserves the essence while adding modern multiplayer functionality.</p>
+                    
+                    <p>This game is based on Alutiiq gaming practices during the lenten season. I sourced the information from the Alutiiq Museum and Archaeological Repository to ensure authenticity and respect for the traditions.</p>
+                    
+                    <div class="terminology">
+                        <h4>Terminology:</h4>
+                        <ul>
+                            <li><strong>Wee</strong> - The marked stick</li>
+                            <li><strong>Dip</strong> - The unmarked stick</li>
+                            <li><strong>Kaataq</strong> - The game itself</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="create-btn" class="btn btn-primary">Create Room</button>
+            <button id="join-btn" class="btn btn-secondary">Join Room</button>
+        </div>
+
+        <!-- Join Room Screen -->
+        <div id="join-screen" class="screen">
+            <h2>Join Game</h2>
+            
+            <div class="form-group">
+                <label for="room-code-input">Room Code</label>
+                <input type="text" id="room-code-input" placeholder="Enter 4-digit code" maxlength="4">
+            </div>
+            
+            <div class="form-group">
+                <label for="player-name-input">Your Name</label>
+                <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="20">
+            </div>
+            
+            <button id="join-game-btn" class="btn btn-primary">Join Game</button>
+            <button id="back-btn" class="btn btn-secondary">Back</button>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby" class="screen">
+            <div class="room-info">
+                <h2>Room Code: <span id="room-code-display">----</span></h2>
+                <p>Share this code with others to join</p>
+            </div>
+            
+            <div class="players-section">
+                <h3>Players (<span id="player-count">0</span>/8)</h3>
+                <div id="players-list" class="players-list">
+                    <!-- Players will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- NEW: Bot Management Controls -->
+            <div class="bot-controls">
+                <button id="add-bot-btn" class="btn btn-secondary" style="display: none;">
+                    🤖 Add Bot
+                </button>
+                <p class="bot-info">Bots will help fill the game if you need more players!</p>
+            </div>
+            
+            <button id="start-game-btn" class="btn btn-primary" disabled>Start Game</button>
+            <button id="leave-btn" class="btn btn-secondary">Leave Room</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-status">
+                <div class="round-info">
+                    <div>Round <span id="round-number">1</span></div>
+                    <div>Time: <span id="timer" class="timer">--</span></div>
+                </div>
+            </div>
+
+            <div class="current-holder">
+                <h3><span id="current-holder">Player</span> is choosing which hand holds the wee...</h3>
+                <div id="current-holder-display">
+                    <!-- Current holder info will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Stick Choice Controls (for current holder) -->
+            <div id="stick-choice" class="holder-controls" style="display: none;">
+                <h4>Choose which hand to hide the wee:</h4>
+                <div class="stick-choice">
+                    <button class="hand-btn" data-choice="left">
+                        <div class="hand-label">Left Hand</div>
+                    </button>
+                    <button class="hand-btn" data-choice="right">
+                        <div class="hand-label">Right Hand</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Voting Controls (for other players) -->
+            <div id="voting-controls" class="voting-controls" style="display: none;">
+                <h4>Which hand do you think holds the wee?</h4>
+                <div class="vote-choice">
+                    <button class="hand-btn" data-vote="left">
+                        <div class="hand-label">Left Hand</div>
+                    </button>
+                    <button class="hand-btn" data-vote="right">
+                        <div class="hand-label">Right Hand</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Waiting Area -->
+            <div id="waiting-area" style="display: none;">
+                <p>Waiting for other players...</p>
+            </div>
+
+            <!-- Results Display -->
+            <div id="results-display" class="results" style="display: none;">
+                <!-- Results will be shown here -->
+            </div>
+
+            <button id="next-round-btn" class="btn btn-primary" style="display: none;">Next Round</button>
+
+            <!-- Players List (Game View) -->
+            <div class="players-section">
+                <h4>Players</h4>
+                <div id="players-list-game" class="players-list-game">
+                    <!-- Game players list -->
+                </div>
+            </div>
+        </div>
+
+        <!-- End Game Screen -->
+        <div id="end-screen" class="screen">
+            <div class="winner-announcement">
+                <h2>Game Over!</h2>
+                <div class="winner">🏆 <span id="winner-name">Winner</span> Wins!</div>
+            </div>
+
+            <div class="final-scores">
+                <h3>Final Scores</h3>
+                <div id="final-scores" class="scores-list">
+                    <!-- Final scores will be displayed here -->
+                </div>
+            </div>
+
+            <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+            <button id="new-game-btn" class="btn btn-secondary">New Game</button>
+        </div>
+    </div>
+
+    <!-- Toast Container for Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Firebase Configuration -->
+    <script>
+        // Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com/",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <!-- Load Bot AI first, then main game -->
+    <script src="bot-ai.js"></script>
+    <script src="game-updated.js"></script>
+</body>
+</html>
