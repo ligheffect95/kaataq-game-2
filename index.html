@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaataq – Lenten Alutiiq Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+
+        <!-- Home / Info Section -->
+        <div id="welcome" class="screen active">
+            <header class="game-header">
+                <h1>Kaataq – Lenten Alutiiq Game</h1>
+                <p class="subtitle">A digital adaptation of the traditional Alutiiq stick guessing game<br>
+                <em>Mobile-friendly. Multiplayer. Cultural education.</em></p>
+            </header>
+            <div class="about-section cultural-info">
+                <button id="info-btn" class="btn btn-secondary">About Kaataq</button>
+                <div id="info-panel" class="info-panel hidden">
+                    <h2>About the Game</h2>
+                    <p><strong>Kaataq</strong> is an Alutiiq guessing game involving psychological gameplay and social interaction. Players take turns hiding a marked stick (<strong>wee</strong>) in one of their hands, while others try to guess which hand contains it. This digital version preserves the essence while adding modern multiplayer functionality.</p>
+                    <h3>Features</h3>
+                    <ul>
+                        <li><strong>Real multiplayer:</strong> Cross-device gameplay using Firebase Realtime Database</li>
+                        <li><strong>Room-based system:</strong> Create or join games with 4-digit codes</li>
+                        <li><strong>Cultural education:</strong> Integrated info about Alutiiq traditions/language</li>
+                        <li><strong>Mobile-responsive:</strong> Optimized for phones and tablets</li>
+                        <li><strong>Real-time sync:</strong> All players see actions instantly</li>
+                        <li><strong>Authentic terminology:</strong> Uses Alutiiq words (Camiq, Taliq, unsure about it but possibly wee and dip as well)</li>
+                    </ul>
+                    <h3>How to Play</h3>
+                    <ol>
+                        <li>Create or join a room using a 4-digit code</li>
+                        <li>Wait for players (3–8 required)</li>
+                        <li>Take turns as Stick Holder (choose which hand hides the "wee")</li>
+                        <li>Other players vote on which hand they think has the marked stick</li>
+                        <li>Score points for correct guesses and successful bluffing</li>
+                        <li>Game ends after everyone has been the Stick Holder once</li>
+                    </ol>
+                    <h3>Cultural Context</h3>
+                    <p>This game is based on Alutiiq gaming practices during the lenten season. I sourced the information from the Alutiiq Museum and Archaeological Repository to ensure authenticity and respect for the traditions.</p>
+                    <ul>
+                        <li><strong>Kaataq:</strong> The stick game itself</li>
+                        <li><strong>Wee:</strong> The marked stick</li>
+                        <li><strong>Dip:</strong> The unmarked stick</li>
+                        <li><strong>Camiq:</strong> Left hand</li>
+                        <li><strong>Taliq:</strong> Right hand</li>
+                    </ul>
+                    <div class="personal-note" style="margin-top: 1em; font-style: italic; color: #b8860b;">
+                        <strong>Note:</strong> I am not Alutiiq, I am an Orthodox Christian who has a deep appreciation for their culture.<br>
+                        This project is meant both as a tool for cultural exchange and to honor the spirit of Alutiiq tradition through play.
+                    </div>
+                </div>
+                <div class="actions" style="margin-top: 2em;">
+                    <button id="create-btn" class="btn btn-primary">Create Room</button>
+                    <button id="join-btn" class="btn btn-secondary">Join Room</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Join Room Screen -->
+        <div id="join-screen" class="screen">
+            <h2>Join Game</h2>
+            <div class="form-group">
+                <label>Room Code:</label>
+                <input type="text" id="room-code-input" placeholder="Enter 4-digit code" maxlength="4">
+            </div>
+            <div class="form-group">
+                <label>Your Name:</label>
+                <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="20">
+            </div>
+            <div class="actions">
+                <button id="join-game-btn" class="btn btn-primary">Join Game</button>
+                <button id="back-btn" class="btn btn-secondary">Back</button>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby" class="screen">
+            <div class="room-info">
+                <h2>Room: <span id="room-code-display"></span></h2>
+                <p>Share this code with others to join</p>
+            </div>
+            <div class="players-section">
+                <h3>Players (<span id="player-count">0</span>)</h3>
+                <div id="players-list" class="players-list"></div>
+            </div>
+            <div class="actions">
+                <button id="start-game-btn" class="btn btn-primary" disabled>Start Game</button>
+                <button id="leave-btn" class="btn btn-secondary">Leave Room</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-status">
+                <div class="round-info">
+                    <span>Round <span id="current-round">1</span></span>
+                    <span id="phase-indicator">Waiting...</span>
+                </div>
+                <div id="timer-display" class="timer"></div>
+            </div>
+            <div class="current-holder">
+                <h3 id="holder-name">Player Name</h3>
+                <p id="holder-instruction">is choosing which hand holds the wee...</p>
+            </div>
+            <div id="holder-view" class="holder-controls hidden">
+                <h3>Choose your hand:</h3>
+                <div class="stick-choice">
+                    <button class="hand-btn" data-choice="left"><span class="hand-label">Camiq (Left)</span></button>
+                    <button class="hand-btn" data-choice="right"><span class="hand-label">Taliq (Right)</span></button>
+                </div>
+            </div>
+            <div id="voting-view" class="voting-controls hidden">
+                <h3>Which hand has the wee?</h3>
+                <div class="vote-choice">
+                    <button class="hand-btn" data-vote="left"><span class="hand-label">Camiq (Left)</span></button>
+                    <button class="hand-btn" data-vote="right"><span class="hand-label">Taliq (Right)</span></button>
+                </div>
+            </div>
+            <div id="results-view" class="results hidden">
+                <div class="reveal">
+                    <h3>The wee was in the <span id="correct-hand"></span> hand!</h3>
+                    <div id="vote-summary" class="vote-summary"></div>
+                </div>
+                <button id="next-round-btn" class="btn btn-primary">Next Round</button>
+            </div>
+            <div class="scoreboard">
+                <h4>Scores</h4>
+                <div id="scores-list" class="scores-list"></div>
+            </div>
+        </div>
+
+        <!-- Game End Screen -->
+        <div id="end-screen" class="screen">
+            <div class="winner-announcement">
+                <h2>Game Complete!</h2>
+                <div id="winner-display" class="winner"></div>
+                <div id="final-scores" class="final-scores"></div>
+            </div>
+            <div class="actions">
+                <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+                <button id="new-game-btn" class="btn btn-secondary">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Firebase compatibility scripts and config -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8dd1dr3ONL0idGOwzyzZ5plCjTG2vLEI",
+            authDomain: "kaataq-game.firebaseapp.com",
+            databaseURL: "https://kaataq-game-default-rtdb.firebaseio.com/",
+            projectId: "kaataq-game",
+            storageBucket: "kaataq-game.appspot.com",
+            messagingSenderId: "602351160973",
+            appId: "1:602351160973:web:c15a4831c5a7d56d149cc4",
+            measurementId: "G-V47NYCZ8BQ"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script src="game.js"></script>
+</body>
+</html>
